@@ -34,8 +34,6 @@
 	      (format t "~c " (aref *field* row col)))
 	 (format t "~%"))))
 
-
-
 (defun string-starts-with (str1 str2)
   (or
    (string-equal str1 str2)
@@ -61,7 +59,13 @@
 (defun get-character-at-pos (pos)
   (row-major-aref *field* pos))
 
-(defun flo ()
+(defun word-puzzle-simple ()
+  "first version of word puzzle"
+  (init-field)
+  (print-field)
+  (play-word-puzzle-simple))
+
+(defun play-word-puzzle-simple ()
     (loop for start-char-pos 
        from 0 
        below (array-total-size *field*) 
