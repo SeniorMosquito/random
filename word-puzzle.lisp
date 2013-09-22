@@ -1,10 +1,22 @@
+; TODOs
+; pretty print output with colors, bolded first letter, arrows between chars?
+; each word can only be found once - watch out when implementing location memory
+; location memory - remember where a word has been found
+; filter words that are too long
+; handle unicode chars
+; profiling
+; performance improvements
+; other solutions (trie, sqlite db?)
+; diagonal
+; printing while running
+; sorting output (will require collect instead of print, prevent direct printing)
+
+
 (defun random-character ()
   (character (+ (random 26) 97)))
 
-(defparameter *field-size* 5)
-
-;(defparameter *field* (make-array `(*field-size* *field-size*)))
-(defparameter *field* (make-array `(5 5)))
+(defparameter *field-size* 4)
+(defparameter *field* (make-array (list *field-size* *field-size*)))
 
 (defun init-field ()
   (loop
@@ -22,7 +34,7 @@
 	      (format t "~c " (aref *field* row col)))
 	 (format t "~%"))))
 
-;pretty print output with colors, bolded first letter, arrows between chars?
+
 
 (defun string-starts-with (str1 str2)
   (or
@@ -60,13 +72,18 @@
 (defun find-matching-word (words word)
 	   (find word words :test `string-equal))
 
+(defconstant +min-word-size+ 3)
+
 (defun check-pos (pos current-string visited-pos)
 ;  (format t "checking ~a~%" pos)
   (vector-push-extend (get-character-at-pos pos) current-string)
   (let ((remaining-words (words-starting-with current-string)))
     (if (> (length remaining-words) 0)
 	(progn
-	  (if (and (> (length current-string) 2) (find-matching-word remaining-words current-string)) (format t "found: ~a~%" current-string))
+	  (if (and
+	       (>= (length current-string) +min-word-size+)
+	       (find-matching-word remaining-words current-string))
+	      (progn (format t "found: ~a~%" current-string) (force-output t)))
 	  ;(format t "~a~5t~a~%" current-string remaining-words)
 	  (loop for neighbour in (get-neighbour-positions pos) do
 	       (if (not (find neighbour visited-pos))
