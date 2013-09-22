@@ -70,7 +70,9 @@
        from 0 
        below (array-total-size *field*) 
        do
-	 (let ((visited-pos (list start-char-pos)) (current-string (make-array 5 :fill-pointer 0 :adjustable t :element-type 'character)))
+	 (let
+	     ((visited-pos (list start-char-pos))
+	      (current-string (make-array 5 :fill-pointer 0 :adjustable t :element-type 'character)))
 	   (check-pos start-char-pos current-string visited-pos))))
 
 (defun find-matching-word (words word)
@@ -87,7 +89,9 @@
 	  (if (and
 	       (>= (length current-string) +min-word-size+)
 	       (find-matching-word remaining-words current-string))
-	      (progn (format t "found: ~a~%" current-string) (force-output t)))
+	      (progn
+		(format t "found: ~a~%" current-string)
+		(force-output t)))
 	  ;(format t "~a~5t~a~%" current-string remaining-words)
 	  (loop for neighbour in (get-neighbour-positions pos) do
 	       (if (not (find neighbour visited-pos))
@@ -95,9 +99,11 @@
 	  ))
     (vector-pop current-string)))
 
+(defconstant +dict-location+ "/usr/share/dict/words")
+
 (defun load-dict ()
   (defparameter *test-words* `(""))
-  (let ((in (open "/usr/share/dict/words" :if-does-not-exist nil)))
+  (let ((in (open +dict-location+ :if-does-not-exist nil)))
     (when in
       (loop for line = (read-line in nil)
          while line do (nconc *test-words* (list line)))
