@@ -10,7 +10,7 @@
 ; diagonal
 ; printing while running
 ; sorting output (will require collect instead of print, prevent direct printing)
-
+; multi threading?
 
 (defun random-character ()
   (character (+ (random 26) 97)))
