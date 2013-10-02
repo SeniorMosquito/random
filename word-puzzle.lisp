@@ -7,7 +7,6 @@
 ; profiling
 ; performance improvements
 ; other solutions (trie, sqlite db?)
-; diagonal
 ; printing while running
 ; sorting output (will require collect instead of print, prevent direct printing)
 ; multi threading?
@@ -50,8 +49,18 @@
 	     (list
 	      (- pos 1)
 	      (+ pos 1)
-	      (- pos *field-size*)
-	      (+ pos *field-size*))))
+	      (- 1 (pos-cell-next-row pos))
+	      (pos-cell-next-row pos)
+	      (+ 1 (pos-cell-next-row pos))
+	      (- 1 (pos-cell-prev-row pos))
+	      (pos-cell-prev-row pos)
+	      (+ 1 (pos-cell-prev-row pos)))))
+
+(defun pos-cell-next-row (pos)
+  (+ pos *field-size*))
+
+(defun pos-cell-prev-row (pos)
+  (- pos *field-size*))
 
 (defun get-neighbour-chars (pos)
   (map `list `get-character-at-pos (get-neighbour-positions pos)))
