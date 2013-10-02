@@ -43,9 +43,7 @@
   (remove-if-not (lambda (x) (string-starts-with seq x)) *test-words*))
 
 (defun get-neighbour-positions (pos)
-  (remove-if (lambda (x) (or
-			  (< x 0)
-			  (>= x (array-total-size *field*))))
+  (remove-if `pos-out-of-field
 	     (list
 	      (- pos 1)
 	      (+ pos 1)
@@ -55,6 +53,11 @@
 	      (- 1 (pos-cell-prev-row pos))
 	      (pos-cell-prev-row pos)
 	      (+ 1 (pos-cell-prev-row pos)))))
+
+(defun pos-out-of-field (pos)
+  (or
+   (< pos 0)
+   (>= pos (array-total-size *field*))))
 
 (defun pos-cell-next-row (pos)
   (+ pos *field-size*))
@@ -70,6 +73,7 @@
 
 (defun word-puzzle-simple ()
   "first version of word puzzle"
+  (load-dict)
   (init-field)
   (print-field)
   (play-word-puzzle-simple))
