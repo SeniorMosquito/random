@@ -7,7 +7,6 @@
 ; profiling
 ; performance improvements
 ; other solutions (trie, sqlite db?)
-; printing while running
 ; sorting output (will require collect instead of print, prevent direct printing)
 ; multi threading?
 
@@ -38,7 +37,7 @@
    (string-equal str1 str2)
    (>= (string/= str1 str2) (length str1))))
 
-(defparameter *test-words* `("berg" "bergbau" "hans" "bergen" "semmel" "xul" "jo"))
+(defparameter *test-words* `())
 (defun words-starting-with (seq)
   (remove-if-not (lambda (x) (string-starts-with seq x)) *test-words*))
 
