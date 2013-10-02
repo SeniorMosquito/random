@@ -38,6 +38,7 @@
    (>= (string/= str1 str2) (length str1))))
 
 (defparameter *test-words* `())
+
 (defun words-starting-with (seq)
   (remove-if-not (lambda (x) (string-starts-with seq x)) *test-words*))
 
