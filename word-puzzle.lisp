@@ -1,22 +1,37 @@
-; TODOs
-; pretty print output with colors, bolded first letter, arrows between chars?
-; each word can only be found once - watch out when implementing location memory
-; location memory - remember where a word has been found
-; filter words that are too long
-; handle unicode chars
-; profiling
-; performance improvements
-; other solutions (trie, sqlite db?)
-; sorting output (will require collect instead of print, prevent direct printing)
-; multi threading?
+					; TODOs
+					; pretty print output with colors, bolded first letter, arrows between chars?
+					; each word can only be found once - watch out when implementing location memory
+					; location memory - remember where a word has been found
+					; filter words that are too long
+					; handle unicode chars
+					; profiling
+					; performance improvements
+					; other solutions (trie, sqlite db?)
+					; sorting output (will require collect instead of print, prevent direct printing)
+					; multi threading?
+
+
+;  (ql:quickload :lisp-unit)
+ ; (ql:quickload :log4cl)
+
+(in-package :cl-user)
+
+(defpackage :com.github.seniormosquito.word-puzzle
+  (:use :common-lisp :lisp-unit :log4cl))
+
+(in-package :com.github.seniormosquito.word-puzzle)
 
 (defun random-character ()
-  (character (+ (random 26) 97)))
+  (code-char (+ (random 26) 97)))
 
 (defparameter *field-size* 4)
 (defparameter *field* (make-array (list *field-size* *field-size*)))
 
+
+  
+
 (defun init-field ()
+  (log:info "Initializing field with size ~a" *field-size*)
   (loop
      for i
      from 0
@@ -26,21 +41,31 @@
 	 (random-character))))
 
 (defun print-field ()
-    (loop for row from 0 below *field-size* do 
+  (loop for row from 0 below *field-size* do 
        (progn
 	 (loop for col from 0 below *field-size* do
 	      (format t "~c " (aref *field* row col)))
 	 (format t "~%"))))
 
-(defun string-starts-with (str1 str2)
+(defun string-starts-with (input prefix-candidate)
   (or
-   (string-equal str1 str2)
-   (>= (string/= str1 str2) (length str1))))
+   (string-equal prefix-candidate input)
+   (>= (string/= prefix-candidate input) (length prefix-candidate))))
+
+(define-test strings-starts-with
+  (assert-true (string-starts-with "abc" "a"))
+  (assert-true (string-starts-with "a" "a"))
+  (assert-true (string-starts-with "abc" ""))
+  (assert-true (string-starts-with "" ""))
+  (assert-true (string-starts-with "abc" "abc"))
+  (assert-false (string-starts-with "bc" "a"))
+  (assert-false (string-starts-with "" "a"))
+  (assert-false (string-starts-with "bc" "a")))
 
 (defparameter *test-words* `())
 
 (defun words-starting-with (seq)
-  (remove-if-not (lambda (x) (string-starts-with seq x)) *test-words*))
+  (remove-if-not (lambda (x) (string-starts-with x seq)) *test-words*))
 
 (defun get-neighbour-positions (pos)
   (remove-if `pos-out-of-field
@@ -68,6 +93,13 @@
 (defun get-neighbour-chars (pos)
   (map `list `get-character-at-pos (get-neighbour-positions pos)))
 
+(define-test get-neighbour-chars
+  (let ((*field* #2A(
+		     (#\a #\b #\c)
+		     (#\d #\e #\f)
+		     (#\g #\h #\i))))
+    (assert-true (find #\b (get-neighbour-chars 0)))))
+  
 (defun get-character-at-pos (pos)
   (row-major-aref *field* pos))
 
@@ -79,22 +111,22 @@
   (play-word-puzzle-simple))
 
 (defun play-word-puzzle-simple ()
-    (loop for start-char-pos 
-       from 0 
-       below (array-total-size *field*) 
-       do
-	 (let
-	     ((visited-pos (list start-char-pos))
-	      (current-string (make-array 5 :fill-pointer 0 :adjustable t :element-type 'character)))
-	   (check-pos start-char-pos current-string visited-pos))))
+  (log:info "Playing Word puzzle simple")
+  (loop for start-char-pos 
+     from 0 
+     below (array-total-size *field*) 
+     do
+       (let
+	   ((visited-pos (list start-char-pos))
+	    (current-string (make-array 5 :fill-pointer 0 :adjustable t :element-type 'character)))
+	 (check-pos start-char-pos current-string visited-pos))))
 
 (defun find-matching-word (words word)
-	   (find word words :test `string-equal))
+  (find word words :test `string-equal))
 
 (defconstant +min-word-size+ 3)
 
 (defun check-pos (pos current-string visited-pos)
-;  (format t "checking ~a~%" pos)
   (vector-push-extend (get-character-at-pos pos) current-string)
   (let ((remaining-words (words-starting-with current-string)))
     (if (> (length remaining-words) 0)
@@ -105,16 +137,16 @@
 	      (progn
 		(format t "found: ~a~%" current-string)
 		(force-output t)))
-	  ;(format t "~a~5t~a~%" current-string remaining-words)
 	  (loop for neighbour in (get-neighbour-positions pos) do
 	       (if (not (find neighbour visited-pos))
-		       (check-pos neighbour current-string visited-pos)))
+		   (check-pos neighbour current-string visited-pos)))
 	  ))
     (vector-pop current-string)))
 
 (defconstant +dict-location+ "/usr/share/dict/words")
 
 (defun load-dict ()
+  (log:info "Loading dictionary")
   (defparameter *test-words* `(""))
   (let ((in (open +dict-location+ :if-does-not-exist nil)))
     (when in
